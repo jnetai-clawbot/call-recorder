@@ -17,7 +17,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.preference.PreferenceManager
 import com.ciphervault.callrecorder.databinding.ActivityMainBinding
 import kotlinx.coroutines.*
@@ -222,20 +221,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startRecording() {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        val formatName = prefs.getString(SettingsActivity.PREF_FORMAT, "WAV") ?: "WAV"
-        val format = try {
-            AudioEngine.AudioFormat.valueOf(formatName)
-        } catch (e: IllegalArgumentException) {
-            logDebug("Invalid format in prefs: $formatName")
-            AudioEngine.AudioFormat.WAV
-        }
-
-        logDebug("Starting recording with format: $format")
+        logDebug("Starting recording via RecorderService")
 
         val intent = Intent(this, RecorderService::class.java).apply {
             action = RecorderService.ACTION_START
-            putExtra(RecorderService.EXTRA_FORMAT, format.name)
         }
 
         try {

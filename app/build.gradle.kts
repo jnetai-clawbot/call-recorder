@@ -23,8 +23,8 @@ android {
             storePassword = System.getenv("KEYSTORE_PASSWORD") ?: ""
             keyAlias = "ciphervault"
             keyPassword = System.getenv("KEYSTORE_PASSWORD") ?: ""
-            isV1SigningEnabled = true
-            isV2SigningEnabled = true
+            enableV1Signing = true
+            enableV2Signing = true
         }
     }
 

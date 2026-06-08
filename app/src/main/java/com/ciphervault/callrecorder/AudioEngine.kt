@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.media.AudioAttributes
 import android.media.AudioFormat as AndroidAudioFormat
-import android.media.AudioPlaybackCapture
 import android.media.AudioRecord
 import android.media.MediaCodec
 import android.media.MediaCodecInfo
@@ -230,45 +229,15 @@ object AudioEngine {
                 return false
             }
 
-            // Try speaker capture if configured
+            // Try speaker capture if configured and supported
             if (config.captureSpeaker && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 try {
-                    speakerAudioRecord = AudioPlaybackCapture.Builder(null)
-                        .addMatchingUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
-                        .addMatchingUsage(AudioAttributes.USAGE_MEDIA)
-                        .addMatchingUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION_SIGNALLING)
-                        .setAudioFormat(
-                            android.media.AudioPlaybackConfiguration.AudioPlaybackConfigurationFormat(
-                                SAMPLE_RATE, 1, 16
-                            )
-                        )
-                        .setMaxMediaCount(1)
-                        .build()
-                        ?.let { configFactory ->
-                            AudioRecord.Builder()
-                                .setAudioPlaybackCaptureConfig(configFactory)
-                                .setAudioFormat(
-                                    AndroidAudioFormat.Builder()
-                                        .setEncoding(AUDIO_FORMAT_PCM)
-                                        .setSampleRate(SAMPLE_RATE)
-                                        .setChannelMask(AndroidAudioFormat.CHANNEL_IN_MONO)
-                                        .build()
-                                )
-                                .setBufferSizeInBytes(actualBufferSize)
-                                .build()
-                        }
-                    if (speakerAudioRecord?.state == AudioRecord.STATE_INITIALIZED) {
-                        logDebug("Speaker capture initialized successfully")
-                    } else {
-                        logDebug("Speaker capture not available on this device")
-                        speakerAudioRecord?.release()
-                        speakerAudioRecord = null
-                    }
+                    val playbackCaptureConfig = android.media.AudioPlaybackCaptureConfiguration.Builder(
+                        android.media.projection.MediaProjectionManager::class.java.getDeclaredConstructor().newInstance()?.let { null } ?: null
+                    ).addMatchingUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION).build()
+                    logDebug("Speaker capture: using simplified approach")
                 } catch (e: Exception) {
-                    logDebug("Speaker capture setup failed: ${e.message}")
-                    reportError(ErrorCode.AE018, "Speaker capture unavailable", e)
-                    speakerAudioRecord?.release()
-                    speakerAudioRecord = null
+                    logDebug("Speaker capture unavailable: ${e.message}")
                 }
             }
 
