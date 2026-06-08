@@ -229,17 +229,7 @@ object AudioEngine {
                 return false
             }
 
-            // Try speaker capture if configured and supported
-            if (config.captureSpeaker && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                try {
-                    val playbackCaptureConfig = android.media.AudioPlaybackCaptureConfiguration.Builder(
-                        android.media.projection.MediaProjectionManager::class.java.getDeclaredConstructor().newInstance()?.let { null } ?: null
-                    ).addMatchingUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION).build()
-                    logDebug("Speaker capture: using simplified approach")
-                } catch (e: Exception) {
-                    logDebug("Speaker capture unavailable: ${e.message}")
-                }
-            }
+            logDebug("Speaker capture requires MediaProjection - not available in foreground-only mode")
 
             audioRecord?.startRecording()
             if (audioRecord?.recordingState != AudioRecord.RECORDSTATE_RECORDING) {

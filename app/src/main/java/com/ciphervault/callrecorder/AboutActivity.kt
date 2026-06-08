@@ -90,7 +90,7 @@ class AboutActivity : AppCompatActivity() {
         }
     }
 
-    private fun fetchLatestRelease(): String {
+    private suspend fun fetchLatestRelease(): String {
         try {
             val url = URL(GITHUB_API_URL)
             val connection = withTimeout(15000) {
