@@ -1,0 +1,23 @@
+Build Call Recorder APK: completed / success
+https://github.com/jnetai-clawbot/call-recorder/actions/runs/27138361547
+Release: v1.0.2
+URL: https://github.com/jnetai-clawbot/call-recorder/releases/tag/v1.0.2
+  Call-Recorder.apk (6577912 bytes)
++ Thought: 5.8s
+Build successful. Release created at https://github.com/jnetai-clawbot/call-recorder/releases
+- APK: Call-Recorder.apk (6.28 MB, debug enabled)
+- Version: v1.0.2
+- Signed: Yes, same ciphervault keystore
+- Releases page: https://github.com/jnetai-clawbot/call-recorder/releases/latest
+Ready to test.
+
+
+
+
+
+
+
+
+
+
+

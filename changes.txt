@@ -1,21 +1,25 @@
 # Call Recorder App Changes
 
+## v1.0.3
+- Fixed version checker to point to correct GitHub repo (jnetai-clawbot/call-recorder)
+- Version info matches GitHub release tag (v1.0.3)
+- Same keystore as v1.0.2 for seamless updates
+
 ## v1.0.2
-- Added dual source recording: microphone + speaker capture with per-source volume controls
-- Added output format selection: WAV (default), FLAC, MP3, AAC, OGG/Vorbis with codec fallback
-- Added selectable microphone audio sources: Call (Mic+Speaker), Microphone, Camcorder, Voice Recognition, Unprocessed
-- Added contact filtering: included/excluded contacts for recording (default: all contacts recorded)
-- Added auto-start on boot with settings toggle (enabled by default)
-- Added BootReceiver for RECEIVE_BOOT_COMPLETED intent
-- Added PulseView animated recording indicator
+- Dual source recording: microphone + speaker capture with per-source volume controls
+- Output format selection: WAV (default), FLAC, MP3, AAC, OGG/Vorbis with codec fallback
+- Selectable microphone audio sources: Call (Mic+Speaker), Microphone, Camcorder, Voice Recognition, Unprocessed
+- Contact filtering: included/excluded contacts for recording (default: all contacts recorded)
+- Auto-start on boot with settings toggle (enabled by default)
+- BootReceiver for RECEIVE_BOOT_COMPLETED intent
+- PulseView animated recording indicator
 - Updated AudioEngine with professional mixing, volume normalization, and multi-format encoding
-- Added persistent error handling with error codes throughout all components
-- Changed default storage location to DCIM/Recordings/call-recording-datetime.ext
-- Updated RecorderService to load configuration from settings
+- Persistent error handling with error codes throughout all components
+- Default storage location: DCIM/Recordings/call-recording-datetime.ext
+- RecorderService loads configuration from settings
 - Comprehensive settings UI with sliders, spinners, toggles, and contact picker
-- Updated About activity with GitHub release checker and version display
+- About activity with GitHub release checker and version display
 - Dark theme with professional layout and bottom spacing
-- v1.0.2 release built via GitHub Actions
 
 ## Initial Version
 - Full Android app structure with Gradle/Kotlin

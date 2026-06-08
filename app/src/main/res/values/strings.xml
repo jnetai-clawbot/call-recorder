@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Call Recorder</string>
-    <string name="about_github_link">View all releases:\nhttps://github.com/jamieduk/call-recorder/releases</string>
+    <string name="about_github_link">View all releases:\nhttps://github.com/jnetai-clawbot/call-recorder/releases</string>
 </resources>
