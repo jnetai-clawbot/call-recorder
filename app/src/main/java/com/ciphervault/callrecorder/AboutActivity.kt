@@ -74,6 +74,19 @@ class AboutActivity : AppCompatActivity() {
 
         binding.tvReleaseInfo.text = "Checking for latest release..."
         checkLatestRelease()
+
+        binding.btnAboutShare.setOnClickListener {
+            val shareUrl = "https://github.com/jnetai-clawbot/call-recorder/releases/latest"
+            val pkgInfo = packageManager.getPackageInfo(packageName, 0)
+            val version = pkgInfo.versionName ?: "1.0"
+            val shareText = "Call Recorder v$version - Record calls to WAV/FLAC/MP3/AAC/OGG\n$shareUrl"
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_SUBJECT, "Call Recorder v$version")
+                putExtra(Intent.EXTRA_TEXT, shareText)
+            }
+            startActivity(Intent.createChooser(intent, "Share Call Recorder"))
+        }
     }
 
     private fun checkLatestRelease() {

@@ -1,5 +1,14 @@
 # Call Recorder App Changes
 
+## v1.0.9
+- Full dual-source recording: creates separate AudioRecord for mic and speaker, mixes both
+- USB headset, Bluetooth SCO/A2DP, HDMI, wired headset detection in source list
+- Recordings save correctly: CountDownLatch waits for file write instead of cancelling coroutine
+- Moved Share button to About section (cleaner main screen layout)
+- Main screen uses 2x2 grid layout with larger text for readability
+- Speaker AudioRecord uses configurable source from settings
+- PCM mixing with proper signed 16-bit handling
+
 ## v1.0.8
 - Fixed recording save failure: stopRecording() now joins (waits) for file write instead of cancelling
 - Call receiver tracks ringing state to reliably detect outgoing vs incoming calls

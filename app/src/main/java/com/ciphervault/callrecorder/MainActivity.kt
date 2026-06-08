@@ -104,20 +104,6 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, AboutActivity::class.java))
         }
 
-        binding.btnShare.setOnClickListener {
-            val shareUrl = "https://github.com/jnetai-clawbot/call-recorder/releases/latest"
-            val pkgInfo = packageManager.getPackageInfo(packageName, 0)
-            val version = pkgInfo.versionName ?: "1.0"
-            val shareText = "Call Recorder v$version - Record calls to WAV/FLAC/MP3/AAC/OGG\n$shareUrl"
-
-            val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                type = "text/plain"
-                putExtra(Intent.EXTRA_SUBJECT, "Call Recorder v$version")
-                putExtra(Intent.EXTRA_TEXT, shareText)
-            }
-            startActivity(Intent.createChooser(shareIntent, "Share Call Recorder"))
-        }
-
         binding.btnRecordings.setOnClickListener {
             startActivity(Intent(this, RecordingsListActivity::class.java))
         }
