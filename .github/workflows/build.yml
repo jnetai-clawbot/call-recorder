@@ -28,21 +28,26 @@ jobs:
           build-tools: "35.0.0"
           packages: "platforms;android-35"
 
-      - name: Checkout keystore
+      - name: Setup Gradle Wrapper
+        run: |
+          GRADLE_VER="8.11.1"
+          wget -q "https://services.gradle.org/distributions/gradle-${GRADLE_VER}-bin.zip" -O /tmp/gradle.zip
+          unzip -q /tmp/gradle.zip -d /tmp/
+          /tmp/gradle-${GRADLE_VER}/bin/gradle wrapper --gradle-version ${GRADLE_VER} --no-daemon
+          chmod +x gradlew
+
+      - name: Checkout Keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-        run: |
-          echo "$KEYSTORE_BASE64" | base64 -d > ciphervault-release-keystore.jks
+        run: echo "$KEYSTORE_BASE64" | base64 -d > ciphervault-release-keystore.jks
 
       - name: Build Release APK
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-        run: |
-          chmod +x gradlew 2>/dev/null || true
-          ./gradlew assembleRelease --no-daemon --stacktrace
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
         timeout-minutes: 30
 
-      - name: Copy APK to output
+      - name: Copy APK
         run: |
           mkdir -p apk
           cp app/build/outputs/apk/release/app-release.apk apk/Call-Recorder.apk
@@ -61,19 +66,11 @@ jobs:
           body: |
             ## Call Recorder v1.0.2
 
-            **Changes:**
-            - Dual source recording (mic + speaker) with volume controls
-            - Multiple output formats: WAV, FLAC, MP3, AAC, OGG/Vorbis
-            - Selectable microphone audio sources
-            - Contact filtering (include/exclude contacts from recording)
-            - Auto-start on boot with toggle in settings
-            - Professional dark theme UI
-            - Persistent error handling with error codes
-            - Version checker (fetches latest GitHub release)
-            - WAV recording with proper RIFF headers
-            - Notification-based recording service
+            Dual source recording (mic + speaker) with per-source volume controls.
+            Output formats: WAV, FLAC, MP3, AAC, OGG/Vorbis.
+            Contact filtering, auto-start on boot, dark theme.
 
-            **APK:** Call-Recorder.apk (debuggable)
+            APK: Call-Recorder.apk
           files: apk/Call-Recorder.apk
           generate_release_notes: true
         env:
