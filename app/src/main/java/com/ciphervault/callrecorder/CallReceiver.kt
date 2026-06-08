@@ -26,6 +26,7 @@ class CallReceiver : BroadcastReceiver() {
 
     private var lastOffHookTime: Long = 0L
     private var lastIdleTime: Long = 0L
+    private var callWasOutgoing: Boolean = false
 
     private fun reportError(code: ErrorCode, message: String, exception: Exception? = null) {
         Log.e(TAG, "[${ERROR_PREFIX}${code.code}] ${code.description}: $message", exception)
@@ -47,7 +48,16 @@ class CallReceiver : BroadcastReceiver() {
         when (state) {
             TelephonyManager.EXTRA_STATE_OFFHOOK -> {
                 lastOffHookTime = System.currentTimeMillis()
+                
+                // Determine call direction: ringing before off-hook = incoming
+                // off-hook without ringing = outgoing
                 val isIncoming = incomingNumber.isNotBlank()
+                
+                if (!isIncoming && !callWasOutgoing) {
+                    // Might be outgoing - check if we had no recent ringing
+                    callWasOutgoing = true
+                }
+
                 val prefs = PreferenceManager.getDefaultSharedPreferences(context)
 
                 val autoRecIncoming = prefs.getBoolean(PREF_AUTO_RECORD_CALLS, false)
@@ -63,24 +73,25 @@ class CallReceiver : BroadcastReceiver() {
                 }
 
                 if (!AudioEngine.isRecording() && shouldRecordCall(context, incomingNumber)) {
-                    logDebug("Starting auto-record for call")
+                    logDebug("Starting auto-record for call (incoming=$isIncoming)")
                     startAutoRecord(context)
                 }
             }
             TelephonyManager.EXTRA_STATE_IDLE -> {
                 val now = System.currentTimeMillis()
-                // Debounce: don't stop if we just went off-hook (state transitions can fire rapidly)
                 if (now - lastOffHookTime < 3000) {
                     logDebug("Idle too soon after off-hook, ignoring")
                     return
                 }
                 lastIdleTime = now
+                callWasOutgoing = false
                 if (AudioEngine.isRecording()) {
                     logDebug("Call ended, stopping auto-record")
                     stopAutoRecord(context)
                 }
             }
             TelephonyManager.EXTRA_STATE_RINGING -> {
+                callWasOutgoing = false
                 logDebug("Ringing: $incomingNumber")
             }
         }

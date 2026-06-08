@@ -1,5 +1,11 @@
 # Call Recorder App Changes
 
+## v1.0.8
+- Fixed recording save failure: stopRecording() now joins (waits) for file write instead of cancelling
+- Call receiver tracks ringing state to reliably detect outgoing vs incoming calls
+- Added Share button on main screen — shares latest GitHub release link via system chooser
+- Recordings now persist correctly for both manual and auto-recorded calls
+
 ## v1.0.7
 - Separate microphone and speaker source selectors in settings
 - Auto-record toggle split: incoming calls + outgoing calls (independent)

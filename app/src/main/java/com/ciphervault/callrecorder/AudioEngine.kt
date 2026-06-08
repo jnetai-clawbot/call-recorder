@@ -556,16 +556,16 @@ object AudioEngine {
             return null
         }
 
-        isRecording = false
         val durationMs = System.currentTimeMillis() - recordingStartTime
         logDebug("Stopping recording, duration=${durationMs}ms")
 
-        try {
-            recordingJob?.cancel()
-            recordingJob = null
-        } catch (e: Exception) {
-            reportError(ErrorCode.AE017, "Failed to cancel recording job", e)
+        isRecording = false
+
+        // Wait for recording coroutine to finish writing, not just cancel
+        kotlinx.coroutines.runBlocking {
+            recordingJob?.join()
         }
+        recordingJob = null
 
         // Clean up speaker record first
         try {

@@ -2,6 +2,8 @@ package com.ciphervault.callrecorder
 
 import android.Manifest
 import android.content.ComponentName
+import android.content.ClipboardManager
+import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
@@ -100,6 +102,20 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnAbout.setOnClickListener {
             startActivity(Intent(this, AboutActivity::class.java))
+        }
+
+        binding.btnShare.setOnClickListener {
+            val shareUrl = "https://github.com/jnetai-clawbot/call-recorder/releases/latest"
+            val pkgInfo = packageManager.getPackageInfo(packageName, 0)
+            val version = pkgInfo.versionName ?: "1.0"
+            val shareText = "Call Recorder v$version - Record calls to WAV/FLAC/MP3/AAC/OGG\n$shareUrl"
+
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_SUBJECT, "Call Recorder v$version")
+                putExtra(Intent.EXTRA_TEXT, shareText)
+            }
+            startActivity(Intent.createChooser(shareIntent, "Share Call Recorder"))
         }
 
         binding.btnRecordings.setOnClickListener {
