@@ -16,7 +16,7 @@ class AboutActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "CR_AboutActivity"
         const val ERROR_PREFIX = "CR-AB-"
-        private const val GITHUB_REPO = "ciphervault/call-recorder"
+        private const val GITHUB_REPO = "jamieduk/call-recorder"
         private const val GITHUB_API_URL = "https://api.github.com/repos/$GITHUB_REPO/releases/latest"
         private const val GITHUB_RELEASES_URL = "https://github.com/$GITHUB_REPO/releases"
     }
