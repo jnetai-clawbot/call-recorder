@@ -12,12 +12,5 @@
         <item name="android:windowBackground">@color/background_dark</item>
         <item name="colorSurface">@color/surface_dark</item>
         <item name="colorOnSurface">@color/text_primary</item>
-        <item name="actionBarStyle">@style/Widget.CallRecorder.ActionBar</item>
-    </style>
-
-    <style name="Widget.CallRecorder.ActionBar" parent="Widget.Material3.ActionBar">
-        <item name="backgroundColor">@color/surface_dark</item>
-        <item name="titleTextColor">@color/accent_blue</item>
-        <item name="displayOptions">showHome|homeAsUp|showTitle</item>
     </style>
 </resources>
