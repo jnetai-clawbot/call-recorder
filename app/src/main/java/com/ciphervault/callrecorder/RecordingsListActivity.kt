@@ -61,12 +61,14 @@ class RecordingsListActivity : AppCompatActivity() {
 
     private fun loadRecordings() {
         try {
-            val dcimDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)
-            val recordingsDirs = listOf(
-                File(dcimDir, "Recordings"),
-                dcimDir,
-                File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC), "CallRecorder")
-            )
+            val recordingsDirs = mutableListOf<File>()
+            // App-private storage (always writable, primary save location)
+            getExternalFilesDir(null)?.let { recordingsDirs.add(File(it, "Recordings")) }
+            // Also scan public DCIM and Music for legacy recordings
+            recordingsDirs.add(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM))
+            recordingsDirs.add(File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), "Recordings"))
+            recordingsDirs.add(File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC), "CallRecorder"))
+            recordingsDirs.add(Environment.getExternalStorageDirectory())
 
             val formats = listOf("wav", "flac", "mp3", "aac", "ogg")
             val allFiles = mutableListOf<File>()

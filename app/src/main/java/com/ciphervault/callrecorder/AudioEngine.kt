@@ -193,16 +193,9 @@ object AudioEngine {
         val dateStr = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
         val extension = config.outputFormat.extension
 
-        val relPath = config.storagePath
-            .removePrefix("/storage/emulated/0/")
-            .removePrefix("storage/emulated/0/")
-            .trim('/')
-            .ifBlank { "DCIM" }
-        val recordingsDir = File(Environment.getExternalStorageDirectory(), relPath)
-        if (!recordingsDir.exists()) {
-            val created = recordingsDir.mkdirs()
-            logDebug("Creating dir ${recordingsDir.absolutePath}: $created")
-        }
+        // Always use app-private external storage (writable on all Android versions)
+        val recordingsDir = File(context.getExternalFilesDir(null), "Recordings")
+        if (!recordingsDir.exists()) recordingsDir.mkdirs()
 
         val outputFile = File(recordingsDir, "call-recording-${dateStr}.$extension")
         logDebug("Output file: ${outputFile.absolutePath}")

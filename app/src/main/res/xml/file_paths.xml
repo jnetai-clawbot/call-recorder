@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
-    <external-path
-        name="music"
-        path="Music/CallRecorder" />
+    <external-files-path
+        name="recordings"
+        path="Recordings/" />
     <external-path
         name="dcim"
-        path="DCIM" />
+        path="DCIM/" />
+    <external-path
+        name="music"
+        path="Music/CallRecorder/" />
     <external-path
         name="root"
         path="." />
