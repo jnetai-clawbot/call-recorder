@@ -292,7 +292,7 @@ object AudioEngine {
             return false
         } catch (e: Exception) {
             reportError(ErrorCode.AE001, "Unexpected error", e)
-            onError?.invoke(e.message)
+            onError?.invoke(e.message ?: "Unknown error")
             return false
         }
     }
