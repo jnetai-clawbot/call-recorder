@@ -3,7 +3,6 @@ package com.ciphervault.callrecorder
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Build
 import android.telephony.TelephonyManager
 import android.util.Log
@@ -14,6 +13,7 @@ class CallReceiver : BroadcastReceiver() {
         private const val TAG = "CR_CallReceiver"
         const val ERROR_PREFIX = "CR-CL-"
         const val PREF_AUTO_RECORD_CALLS = "auto_record_calls"
+        const val PREF_AUTO_RECORD_OUTGOING = "auto_record_outgoing"
         const val PREF_INCLUDED_CONTACTS = "included_contacts"
         const val PREF_EXCLUDED_CONTACTS = "excluded_contacts"
     }
@@ -21,13 +21,14 @@ class CallReceiver : BroadcastReceiver() {
     enum class ErrorCode(val code: String, val description: String) {
         CL001("CL001", "Failed to start auto-record"),
         CL002("CL002", "Failed to stop auto-record"),
-        CL003("CL003", "TelephonyManager unavailable"),
         CL999("CL999", "Unknown call receiver error")
     }
 
+    private var lastOffHookTime: Long = 0L
+    private var lastIdleTime: Long = 0L
+
     private fun reportError(code: ErrorCode, message: String, exception: Exception? = null) {
-        val fullMsg = "[$ERROR_PREFIX${code.code}] ${code.description}: $message"
-        Log.e(TAG, fullMsg, exception)
+        Log.e(TAG, "[${ERROR_PREFIX}${code.code}] ${code.description}: $message", exception)
     }
 
     private fun logDebug(message: String) {
@@ -38,14 +39,6 @@ class CallReceiver : BroadcastReceiver() {
         val action = intent.action ?: return
         if (action != TelephonyManager.ACTION_PHONE_STATE_CHANGED) return
 
-        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        val autoRecord = prefs.getBoolean(PREF_AUTO_RECORD_CALLS, false)
-
-        if (!autoRecord) {
-            logDebug("Auto-record calls disabled")
-            return
-        }
-
         val state = intent.getStringExtra(TelephonyManager.EXTRA_STATE) ?: return
         val incomingNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER) ?: ""
 
@@ -53,14 +46,37 @@ class CallReceiver : BroadcastReceiver() {
 
         when (state) {
             TelephonyManager.EXTRA_STATE_OFFHOOK -> {
-                val shouldRecord = shouldRecordCall(context, incomingNumber)
-                logDebug("Off-hook: shouldRecord=$shouldRecord")
-                if (shouldRecord && !AudioEngine.isRecording()) {
+                lastOffHookTime = System.currentTimeMillis()
+                val isIncoming = incomingNumber.isNotBlank()
+                val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+
+                val autoRecIncoming = prefs.getBoolean(PREF_AUTO_RECORD_CALLS, false)
+                val autoRecOutgoing = prefs.getBoolean(PREF_AUTO_RECORD_OUTGOING, false)
+
+                if (isIncoming && !autoRecIncoming) {
+                    logDebug("Incoming call auto-record disabled")
+                    return
+                }
+                if (!isIncoming && !autoRecOutgoing) {
+                    logDebug("Outgoing call auto-record disabled")
+                    return
+                }
+
+                if (!AudioEngine.isRecording() && shouldRecordCall(context, incomingNumber)) {
+                    logDebug("Starting auto-record for call")
                     startAutoRecord(context)
                 }
             }
             TelephonyManager.EXTRA_STATE_IDLE -> {
+                val now = System.currentTimeMillis()
+                // Debounce: don't stop if we just went off-hook (state transitions can fire rapidly)
+                if (now - lastOffHookTime < 3000) {
+                    logDebug("Idle too soon after off-hook, ignoring")
+                    return
+                }
+                lastIdleTime = now
                 if (AudioEngine.isRecording()) {
+                    logDebug("Call ended, stopping auto-record")
                     stopAutoRecord(context)
                 }
             }
@@ -78,12 +94,12 @@ class CallReceiver : BroadcastReceiver() {
         val excludedIds = contactPrefs.getStringSet(PREF_EXCLUDED_CONTACTS, emptySet()) ?: emptySet()
 
         if (excludedIds.isNotEmpty() && number in excludedIds) {
-            logDebug("Number $number is excluded from recording")
+            logDebug("Number $number excluded")
             return false
         }
 
         if (includedIds.isNotEmpty() && number !in includedIds) {
-            logDebug("Number $number is not in included list")
+            logDebug("Number $number not in included list")
             return false
         }
 
@@ -92,7 +108,6 @@ class CallReceiver : BroadcastReceiver() {
 
     private fun startAutoRecord(context: Context) {
         try {
-            logDebug("Auto-starting recording on call")
             val intent = Intent(context, RecorderService::class.java).apply {
                 action = RecorderService.ACTION_START
             }
@@ -102,19 +117,18 @@ class CallReceiver : BroadcastReceiver() {
                 context.startService(intent)
             }
         } catch (e: Exception) {
-            reportError(ErrorCode.CL001, "Failed to start auto-record service", e)
+            reportError(ErrorCode.CL001, "Failed to start auto-record", e)
         }
     }
 
     private fun stopAutoRecord(context: Context) {
         try {
-            logDebug("Auto-stopping recording on call end")
             val intent = Intent(context, RecorderService::class.java).apply {
                 action = RecorderService.ACTION_STOP
             }
             context.startService(intent)
         } catch (e: Exception) {
-            reportError(ErrorCode.CL002, "Failed to stop auto-record service", e)
+            reportError(ErrorCode.CL002, "Failed to stop auto-record", e)
         }
     }
 }

@@ -78,7 +78,8 @@ object AudioEngine {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) MediaRecorder.AudioSource.UNPROCESSED else MediaRecorder.AudioSource.MIC,
             "Unprocessed Mic",
             null
-        );
+        ),
+        VOICE_CALL(MediaRecorder.AudioSource.VOICE_CALL, "Voice Call", null);
 
         companion object {
             fun fromId(id: Int): AudioSource = entries.find { it.id == id } ?: VOICE_COMMUNICATION
@@ -88,6 +89,7 @@ object AudioEngine {
 
     data class RecordingConfig(
         val micSource: AudioSource = AudioSource.VOICE_COMMUNICATION,
+        val speakerSource: AudioSource = AudioSource.VOICE_COMMUNICATION,
         val outputFormat: OutputFormat = OutputFormat.WAV,
         val micVolume: Float = 1.0f,
         val speakerVolume: Float = 0.5f,

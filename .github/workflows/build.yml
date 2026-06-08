@@ -53,8 +53,8 @@ jobs:
 
       - uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.6
-          name: Call Recorder v1.0.6
+          tag_name: v1.0.7
+          name: Call Recorder v1.0.7
           files: apk/Call-Recorder.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

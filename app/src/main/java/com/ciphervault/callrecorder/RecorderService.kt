@@ -88,6 +88,11 @@ class RecorderService : Service() {
             AudioEngine.AudioSource.VOICE_COMMUNICATION.name
         ) ?: AudioEngine.AudioSource.VOICE_COMMUNICATION.name
 
+        val speakerSourceName = prefs.getString(
+            SettingsActivity.PREF_SPEAKER_SOURCE,
+            AudioEngine.AudioSource.VOICE_CALL.name
+        ) ?: AudioEngine.AudioSource.VOICE_CALL.name
+
         val outputFormatName = prefs.getString(
             SettingsActivity.PREF_FORMAT,
             AudioEngine.OutputFormat.WAV.name
@@ -103,6 +108,7 @@ class RecorderService : Service() {
 
         return AudioEngine.RecordingConfig(
             micSource = AudioEngine.AudioSource.fromName(micSourceName),
+            speakerSource = AudioEngine.AudioSource.fromName(speakerSourceName),
             outputFormat = AudioEngine.OutputFormat.fromName(outputFormatName),
             micVolume = micVolume,
             speakerVolume = speakerVolume,

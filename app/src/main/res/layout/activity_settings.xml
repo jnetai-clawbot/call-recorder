@@ -12,7 +12,7 @@
         android:orientation="vertical"
         android:padding="20dp">
 
-        <!-- Audio Source -->
+        <!-- Microphone Source -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -24,6 +24,23 @@
 
         <Spinner
             android:id="@+id/spinnerMicSource"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="@drawable/spinner_background"
+            android:padding="12dp" />
+
+        <!-- Speaker Source -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Speaker Source"
+            android:textSize="16sp"
+            android:textColor="@color/accent_blue"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="6dp" />
+
+        <Spinner
+            android:id="@+id/spinnerSpeakerSource"
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:background="@drawable/spinner_background"
@@ -145,7 +162,15 @@
             android:id="@+id/switchAutoRecordCalls"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Auto-record when call answered"
+            android:text="Auto-record incoming calls"
+            android:textColor="@color/text_secondary"
+            android:layout_marginTop="4dp" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/switchAutoRecordOutgoing"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Auto-record outgoing calls"
             android:textColor="@color/text_secondary"
             android:layout_marginTop="4dp" />
 
@@ -170,7 +195,7 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:hint="DCIM"
+                android:hint="/storage/emulated/0/DCIM"
                 android:textColorHint="@color/text_hint"
                 android:textColor="@color/text_primary"
                 android:background="@drawable/edittext_background"
@@ -301,7 +326,7 @@
                 android:layout_height="56dp"
                 android:layout_weight="1"
                 android:text="Save"
-                android:textColor="@color/accent_blue" />
+                android:textColor="@color/text_primary" />
         </LinearLayout>
 
         <!-- Bottom spacer -->

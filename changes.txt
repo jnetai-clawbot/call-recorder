@@ -1,5 +1,12 @@
 # Call Recorder App Changes
 
+## v1.0.7
+- Separate microphone and speaker source selectors in settings
+- Auto-record toggle split: incoming calls + outgoing calls (independent)
+- CallReceiver debounce prevents premature recording stops on state transitions
+- Save button text color fixed to white for visibility
+- Speaker source defaults to VOICE_CALL, mic to VOICE_COMMUNICATION
+
 ## v1.0.6
 - Storage path always resolves to /storage/emulated/0/<user-path>
 - Settings displays and saves the full absolute path

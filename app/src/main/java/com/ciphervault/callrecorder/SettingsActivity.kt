@@ -20,12 +20,14 @@ class SettingsActivity : AppCompatActivity() {
         const val ERROR_PREFIX = "CR-SE-"
         const val PREF_FORMAT = "audio_output_format"
         const val PREF_MIC_SOURCE = "audio_mic_source"
+        const val PREF_SPEAKER_SOURCE = "audio_speaker_source"
         const val PREF_MIC_VOLUME = "audio_mic_volume"
         const val PREF_SPEAKER_VOLUME = "audio_speaker_volume"
         const val PREF_CAPTURE_SPEAKER = "audio_capture_speaker"
         const val PREF_STORAGE_PATH = "storage_path"
         const val PREF_AUTO_START = "auto_start_app"
         const val PREF_AUTO_RECORD_CALLS = "auto_record_calls"
+        const val PREF_AUTO_RECORD_OUTGOING = "auto_record_outgoing"
     }
 
     enum class ErrorCode(val code: String, val description: String) {
@@ -64,6 +66,7 @@ class SettingsActivity : AppCompatActivity() {
 
         setupFormatSpinner()
         setupMicSourceSpinner()
+        setupSpeakerSourceSpinner()
         setupVolumeSliders()
         loadSettings()
         setupButtons()
@@ -79,6 +82,12 @@ class SettingsActivity : AppCompatActivity() {
         val sources = AudioEngine.AudioSource.entries.map { it.displayName }
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, sources)
         binding.spinnerMicSource.adapter = adapter
+    }
+
+    private fun setupSpeakerSourceSpinner() {
+        val sources = AudioEngine.AudioSource.entries.map { it.displayName }
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, sources)
+        binding.spinnerSpeakerSource.adapter = adapter
     }
 
     private fun setupVolumeSliders() {
@@ -104,6 +113,12 @@ class SettingsActivity : AppCompatActivity() {
             val sourceIndex = AudioEngine.AudioSource.entries.indexOf(micSource)
             if (sourceIndex >= 0) binding.spinnerMicSource.setSelection(sourceIndex)
 
+            val speakerSourceName = prefs.getString(PREF_SPEAKER_SOURCE, AudioEngine.AudioSource.VOICE_CALL.name)
+                ?: AudioEngine.AudioSource.VOICE_CALL.name
+            val speakerSource = AudioEngine.AudioSource.fromName(speakerSourceName)
+            val spkIdx = AudioEngine.AudioSource.entries.indexOf(speakerSource)
+            if (spkIdx >= 0) binding.spinnerSpeakerSource.setSelection(spkIdx)
+
             val micVol = prefs.getFloat(PREF_MIC_VOLUME, 1.0f)
             val spkVol = prefs.getFloat(PREF_SPEAKER_VOLUME, 0.5f)
 
@@ -118,6 +133,8 @@ class SettingsActivity : AppCompatActivity() {
                 prefs.getBoolean(PREF_AUTO_START, true)
             binding.switchAutoRecordCalls.isChecked =
                 prefs.getBoolean(PREF_AUTO_RECORD_CALLS, false)
+            binding.switchAutoRecordOutgoing.isChecked =
+                prefs.getBoolean(PREF_AUTO_RECORD_OUTGOING, false)
             val savedPath = prefs.getString(PREF_STORAGE_PATH, "DCIM") ?: "DCIM"
             val displayPath = if (savedPath.startsWith("/")) savedPath
                 else "/storage/emulated/0/$savedPath"
@@ -168,11 +185,13 @@ class SettingsActivity : AppCompatActivity() {
         try {
             val selectedFormat = AudioEngine.OutputFormat.entries[binding.spinnerFormat.selectedItemPosition]
             val selectedMicSource = AudioEngine.AudioSource.entries[binding.spinnerMicSource.selectedItemPosition]
+            val selectedSpeakerSource = AudioEngine.AudioSource.entries[binding.spinnerSpeakerSource.selectedItemPosition]
             val micVol = binding.sliderMicVolume.value
             val spkVol = binding.sliderSpeakerVolume.value
             val captureSpeaker = binding.switchCaptureSpeaker.isChecked
             val autoStart = binding.switchAutoStart.isChecked
             val autoRecordCalls = binding.switchAutoRecordCalls.isChecked
+            val autoRecordOutgoing = binding.switchAutoRecordOutgoing.isChecked
             val rawPath = binding.etStoragePath.text.toString().ifBlank { "DCIM" }
             val storagePath = rawPath
                 .removePrefix("/storage/emulated/0/")
@@ -182,11 +201,13 @@ class SettingsActivity : AppCompatActivity() {
             prefs.edit().apply {
                 putString(PREF_FORMAT, selectedFormat.name)
                 putString(PREF_MIC_SOURCE, selectedMicSource.name)
+                putString(PREF_SPEAKER_SOURCE, selectedSpeakerSource.name)
                 putFloat(PREF_MIC_VOLUME, micVol)
                 putFloat(PREF_SPEAKER_VOLUME, spkVol)
                 putBoolean(PREF_CAPTURE_SPEAKER, captureSpeaker)
                 putBoolean(PREF_AUTO_START, autoStart)
                 putBoolean(PREF_AUTO_RECORD_CALLS, autoRecordCalls)
+                putBoolean(PREF_AUTO_RECORD_OUTGOING, autoRecordOutgoing)
                 putString(PREF_STORAGE_PATH, storagePath)
                 apply()
             }
@@ -194,7 +215,7 @@ class SettingsActivity : AppCompatActivity() {
             logDebug("Settings saved: format=${selectedFormat.displayName}, micSrc=${selectedMicSource.displayName}, " +
                     "micVol=${(micVol*100).toInt()}%, spkVol=${(spkVol*100).toInt()}%, " +
                     "captureSpk=$captureSpeaker, autoStart=$autoStart, " +
-                    "autoRecordCalls=$autoRecordCalls")
+                    "autoRecCalls=$autoRecordCalls, autoRecOutgoing=$autoRecordOutgoing")
 
             Toast.makeText(this, "Settings saved", Toast.LENGTH_SHORT).show()
             finish()
