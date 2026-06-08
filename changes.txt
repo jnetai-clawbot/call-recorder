@@ -1,5 +1,10 @@
 # Call Recorder App Changes
 
+## v1.0.6
+- Storage path always resolves to /storage/emulated/0/<user-path>
+- Settings displays and saves the full absolute path
+- Browse button auto-prepends /storage/emulated/0/DCIM/ to selected path
+
 ## v1.0.5
 - In-app recordings list screen showing all saved files with name, date, size, format
 - Tapping a recording opens it or offers to share via audio player

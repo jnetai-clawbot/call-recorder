@@ -118,9 +118,10 @@ class SettingsActivity : AppCompatActivity() {
                 prefs.getBoolean(PREF_AUTO_START, true)
             binding.switchAutoRecordCalls.isChecked =
                 prefs.getBoolean(PREF_AUTO_RECORD_CALLS, false)
-            binding.etStoragePath.setText(
-                prefs.getString(PREF_STORAGE_PATH, "DCIM") ?: "DCIM"
-            )
+            val savedPath = prefs.getString(PREF_STORAGE_PATH, "DCIM") ?: "DCIM"
+            val displayPath = if (savedPath.startsWith("/")) savedPath
+                else "/storage/emulated/0/$savedPath"
+            binding.etStoragePath.setText(displayPath)
 
             val selectedIncluded = getContactsSummary(ContactPickerActivity.PREF_INCLUDED_CONTACTS)
             val selectedExcluded = getContactsSummary(ContactPickerActivity.PREF_EXCLUDED_CONTACTS)
@@ -172,7 +173,11 @@ class SettingsActivity : AppCompatActivity() {
             val captureSpeaker = binding.switchCaptureSpeaker.isChecked
             val autoStart = binding.switchAutoStart.isChecked
             val autoRecordCalls = binding.switchAutoRecordCalls.isChecked
-            val storagePath = binding.etStoragePath.text.toString().ifBlank { "DCIM" }
+            val rawPath = binding.etStoragePath.text.toString().ifBlank { "DCIM" }
+            val storagePath = rawPath
+                .removePrefix("/storage/emulated/0/")
+                .removePrefix("storage/emulated/0/")
+                .trim('/')
 
             prefs.edit().apply {
                 putString(PREF_FORMAT, selectedFormat.name)
@@ -231,7 +236,7 @@ class SettingsActivity : AppCompatActivity() {
             } else {
                 docId.trimEnd('/')
             }
-            binding.etStoragePath.setText("DCIM/$path".trimEnd('/'))
+            binding.etStoragePath.setText("/storage/emulated/0/DCIM/$path".trimEnd('/'))
             logDebug("Selected path: DCIM/$path")
         }
     }
