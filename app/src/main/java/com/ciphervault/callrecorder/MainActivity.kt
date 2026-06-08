@@ -103,59 +103,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnRecordings.setOnClickListener {
-            val recordingsDir = File(
-                android.os.Environment.getExternalStoragePublicDirectory(
-                    android.os.Environment.DIRECTORY_MUSIC
-                ),
-                "CallRecorder"
-            )
-            if (!recordingsDir.exists()) {
-                recordingsDir.mkdirs()
-            }
-            val files = recordingsDir.listFiles()?.filter { it.isFile && it.extension in listOf("wav", "flac", "mp3") }
-                ?.sortedByDescending { it.lastModified() }
-
-            if (files.isNullOrEmpty()) {
-                Toast.makeText(this, "No recordings found", Toast.LENGTH_SHORT).show()
-            } else {
-                val intent = Intent(Intent.ACTION_VIEW).apply {
-                    setDataAndType(
-                        androidx.core.content.FileProvider.getUriForFile(
-                            this@MainActivity,
-                            "$packageName.fileprovider",
-                            recordingsDir
-                        ),
-                        "resource/folder"
-                    )
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-                try {
-                    startActivity(intent)
-                } catch (e: Exception) {
-                    logDebug("Cannot open file manager: ${e.message}")
-                    try {
-                        val infoIntent = Intent(Intent.ACTION_VIEW).apply {
-                            setDataAndType(
-                                androidx.core.content.FileProvider.getUriForFile(
-                                    this@MainActivity,
-                                    "$packageName.fileprovider",
-                                    files.first()
-                                ),
-                                "audio/*"
-                            )
-                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                        }
-                        startActivity(infoIntent)
-                    } catch (e2: Exception) {
-                        Toast.makeText(
-                            this,
-                            "Recordings saved in Music/CallRecorder",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-                }
-            }
-        }
+            startActivity(Intent(this, RecordingsListActivity::class.java))
     }
 
     override fun onResume() {

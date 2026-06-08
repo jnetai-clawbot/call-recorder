@@ -1,5 +1,12 @@
 # Call Recorder App Changes
 
+## v1.0.5
+- In-app recordings list screen showing all saved files with name, date, size, format
+- Tapping a recording opens it or offers to share via audio player
+- Default storage: /storage/emulated/0/DCIM (configurable in settings)
+- Browse button in settings opens SAF folder picker to choose storage location
+- Scans DCIM/, DCIM/Recordings/, Music/CallRecorder/ for all recordings
+
 ## v1.0.4
 - Added auto-record toggle: automatically start recording when a call is answered/off-hook
 - Calls stop recording automatically when the call ends (state goes idle)

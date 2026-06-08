@@ -2,7 +2,10 @@ package com.ciphervault.callrecorder
 
 import android.content.Intent
 import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
+import android.provider.DocumentsContract
 import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.SeekBar
@@ -116,7 +119,7 @@ class SettingsActivity : AppCompatActivity() {
             binding.switchAutoRecordCalls.isChecked =
                 prefs.getBoolean(PREF_AUTO_RECORD_CALLS, false)
             binding.etStoragePath.setText(
-                prefs.getString(PREF_STORAGE_PATH, "DCIM/Recordings") ?: "DCIM/Recordings"
+                prefs.getString(PREF_STORAGE_PATH, "DCIM") ?: "DCIM"
             )
 
             val selectedIncluded = getContactsSummary(ContactPickerActivity.PREF_INCLUDED_CONTACTS)
@@ -157,6 +160,7 @@ class SettingsActivity : AppCompatActivity() {
 
         binding.btnSave.setOnClickListener { saveAndFinish() }
         binding.btnCancel.setOnClickListener { finish() }
+        binding.btnBrowseStorage.setOnClickListener { browseStoragePath() }
     }
 
     private fun saveAndFinish() {
@@ -168,7 +172,7 @@ class SettingsActivity : AppCompatActivity() {
             val captureSpeaker = binding.switchCaptureSpeaker.isChecked
             val autoStart = binding.switchAutoStart.isChecked
             val autoRecordCalls = binding.switchAutoRecordCalls.isChecked
-            val storagePath = binding.etStoragePath.text.toString().ifBlank { "DCIM/Recordings" }
+            val storagePath = binding.etStoragePath.text.toString().ifBlank { "DCIM" }
 
             prefs.edit().apply {
                 putString(PREF_FORMAT, selectedFormat.name)
@@ -192,6 +196,43 @@ class SettingsActivity : AppCompatActivity() {
         } catch (e: Exception) {
             reportError(ErrorCode.SE001, "Failed to save settings", e)
             Toast.makeText(this, "Error saving settings: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun browseStoragePath() {
+        try {
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
+                putExtra(DocumentsContract.EXTRA_INITIAL_URI,
+                    DocumentsContract.buildDocumentUri(
+                        "com.android.externalstorage.documents",
+                        "primary:DCIM"
+                    )
+                )
+            }
+            startActivityForResult(intent, 100)
+        } catch (e: Exception) {
+            logDebug("SAF picker failed, trying fallback: ${e.message}")
+            try {
+                startActivityForResult(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE), 100)
+            } catch (e2: Exception) {
+                Toast.makeText(this, "Can't open folder picker", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 100 && resultCode == RESULT_OK && data?.data != null) {
+            val uri = data.data!!
+            val docId = uri.lastPathSegment ?: return
+            // Extract the real path segment after "primary:"
+            val path = if (docId.contains(":")) {
+                docId.substringAfter(":").trimEnd('/')
+            } else {
+                docId.trimEnd('/')
+            }
+            binding.etStoragePath.setText("DCIM/$path".trimEnd('/'))
+            logDebug("Selected path: DCIM/$path")
         }
     }
 

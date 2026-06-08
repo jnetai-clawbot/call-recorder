@@ -56,6 +56,12 @@
             android:configChanges="orientation|screenSize"
             android:parentActivityName=".SettingsActivity" />
 
+        <activity
+            android:name=".RecordingsListActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize"
+            android:parentActivityName=".MainActivity" />
+
         <service
             android:name=".RecorderService"
             android:exported="false"

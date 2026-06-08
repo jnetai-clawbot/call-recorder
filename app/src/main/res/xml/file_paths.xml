@@ -4,8 +4,8 @@
         name="music"
         path="Music/CallRecorder" />
     <external-path
-        name="dcim_recordings"
-        path="DCIM/Recordings" />
+        name="dcim"
+        path="DCIM" />
     <external-path
         name="root"
         path="." />

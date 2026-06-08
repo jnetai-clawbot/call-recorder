@@ -98,8 +98,8 @@ class RecorderService : Service() {
         val captureSpeaker = prefs.getBoolean(SettingsActivity.PREF_CAPTURE_SPEAKER, true)
         val storagePath = prefs.getString(
             SettingsActivity.PREF_STORAGE_PATH,
-            "DCIM/Recordings"
-        ) ?: "DCIM/Recordings"
+            "DCIM"
+        ) ?: "DCIM"
 
         return AudioEngine.RecordingConfig(
             micSource = AudioEngine.AudioSource.fromName(micSourceName),

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/itemRoot"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:padding="12dp"
+    android:background="@drawable/card_background"
+    android:layout_marginBottom="4dp"
+    android:clickable="true"
+    android:focusable="true">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_marginEnd="12dp">
+
+        <TextView
+            android:id="@+id/tvRecName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="recording.wav"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/tvRecDetails"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="01 Jan 2026 12:00  •  1.5 MB"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:layout_marginTop="2dp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvRecFormat"
+        android:layout_width="40dp"
+        android:layout_height="wrap_content"
+        android:text="WAV"
+        android:textColor="@color/accent_blue"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:background="@drawable/spinner_background"
+        android:padding="4dp" />
+
+</LinearLayout>
