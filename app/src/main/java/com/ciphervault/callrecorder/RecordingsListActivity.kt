@@ -64,7 +64,7 @@ class RecordingsListActivity : AppCompatActivity() {
             val dcimDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)
             val recordingsDirs = listOf(
                 File(dcimDir, "Recordings"),
-                File(dcimDir),
+                dcimDir,
                 File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC), "CallRecorder")
             )
 

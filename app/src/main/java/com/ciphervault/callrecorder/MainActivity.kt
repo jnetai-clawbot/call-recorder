@@ -104,6 +104,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnRecordings.setOnClickListener {
             startActivity(Intent(this, RecordingsListActivity::class.java))
+        }
     }
 
     override fun onResume() {
