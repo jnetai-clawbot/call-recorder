@@ -24,9 +24,18 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Record microphone audio to WAV, FLAC, or MP3"
+            android:text="Record mic audio to WAV, FLAC, MP3, AAC, or OGG"
             android:textSize="14sp"
             android:textColor="@color/text_secondary"
+            android:layout_marginTop="8dp"
+            android:gravity="center" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Made by jnetai.com"
+            android:textSize="14sp"
+            android:textColor="@color/accent_blue"
             android:layout_marginTop="8dp"
             android:gravity="center" />
 
@@ -86,7 +95,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="CipherVault 2026"
+            android:text="jnetai.com 2026"
             android:textSize="12sp"
             android:textColor="@color/text_hint"
             android:layout_marginTop="8dp" />

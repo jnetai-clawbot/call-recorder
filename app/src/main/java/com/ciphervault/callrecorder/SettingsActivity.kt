@@ -22,6 +22,7 @@ class SettingsActivity : AppCompatActivity() {
         const val PREF_CAPTURE_SPEAKER = "audio_capture_speaker"
         const val PREF_STORAGE_PATH = "storage_path"
         const val PREF_AUTO_START = "auto_start_app"
+        const val PREF_AUTO_RECORD_CALLS = "auto_record_calls"
     }
 
     enum class ErrorCode(val code: String, val description: String) {
@@ -112,6 +113,8 @@ class SettingsActivity : AppCompatActivity() {
                 prefs.getBoolean(PREF_CAPTURE_SPEAKER, true)
             binding.switchAutoStart.isChecked =
                 prefs.getBoolean(PREF_AUTO_START, true)
+            binding.switchAutoRecordCalls.isChecked =
+                prefs.getBoolean(PREF_AUTO_RECORD_CALLS, false)
             binding.etStoragePath.setText(
                 prefs.getString(PREF_STORAGE_PATH, "DCIM/Recordings") ?: "DCIM/Recordings"
             )
@@ -164,6 +167,7 @@ class SettingsActivity : AppCompatActivity() {
             val spkVol = binding.sliderSpeakerVolume.value
             val captureSpeaker = binding.switchCaptureSpeaker.isChecked
             val autoStart = binding.switchAutoStart.isChecked
+            val autoRecordCalls = binding.switchAutoRecordCalls.isChecked
             val storagePath = binding.etStoragePath.text.toString().ifBlank { "DCIM/Recordings" }
 
             prefs.edit().apply {
@@ -173,13 +177,15 @@ class SettingsActivity : AppCompatActivity() {
                 putFloat(PREF_SPEAKER_VOLUME, spkVol)
                 putBoolean(PREF_CAPTURE_SPEAKER, captureSpeaker)
                 putBoolean(PREF_AUTO_START, autoStart)
+                putBoolean(PREF_AUTO_RECORD_CALLS, autoRecordCalls)
                 putString(PREF_STORAGE_PATH, storagePath)
                 apply()
             }
 
             logDebug("Settings saved: format=${selectedFormat.displayName}, micSrc=${selectedMicSource.displayName}, " +
                     "micVol=${(micVol*100).toInt()}%, spkVol=${(spkVol*100).toInt()}%, " +
-                    "captureSpk=$captureSpeaker, autoStart=$autoStart")
+                    "captureSpk=$captureSpeaker, autoStart=$autoStart, " +
+                    "autoRecordCalls=$autoRecordCalls")
 
             Toast.makeText(this, "Settings saved", Toast.LENGTH_SHORT).show()
             finish()

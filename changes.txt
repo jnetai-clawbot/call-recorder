@@ -1,5 +1,12 @@
 # Call Recorder App Changes
 
+## v1.0.4
+- Added auto-record toggle: automatically start recording when a call is answered/off-hook
+- Calls stop recording automatically when the call ends (state goes idle)
+- Respects included/excluded contact filter settings
+- CallReceiver monitors phone state via PHONE_STATE intent
+- Toggle in Settings: "Auto-record when call answered"
+
 ## v1.0.3
 - Fixed version checker to point to correct GitHub repo (jnetai-clawbot/call-recorder)
 - Version info matches GitHub release tag (v1.0.3)
