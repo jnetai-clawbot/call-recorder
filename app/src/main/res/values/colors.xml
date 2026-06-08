@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="background_dark">#FF121212</color>
+    <color name="surface_dark">#FF1E1E1E</color>
+    <color name="text_primary">#FFFFFFFF</color>
+    <color name="text_secondary">#FFB0B0B0</color>
+    <color name="text_hint">#FF606060</color>
+    <color name="accent_blue">#FF64B5F6</color>
+    <color name="button_green">#FF2E7D32</color>
+    <color name="button_red">#FFC62828</color>
+    <color name="recording_red">#FFEF5350</color>
+    <color name="divider">#FF333333</color>
+    <color name="card_surface">#FF252525</color>
+</resources>
