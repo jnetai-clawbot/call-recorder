@@ -316,6 +316,7 @@ object AudioEngine {
         val mixedBuf = ByteArray(bufferSize)
 
         var totalFrames = 0L
+        var consecutiveErrors = 0
         try {
             while (isActive && isRecording) {
                 val micBytes = audioRecord?.read(micBuf, 0, micBuf.size) ?: -1
@@ -324,7 +325,16 @@ object AudioEngine {
                     spkBytes = speakerAudioRecord?.read(spkBuf, 0, spkBuf.size) ?: -1
                 }
 
-                if (micBytes < 0 && spkBytes < 0) break
+                if (micBytes < 0 && spkBytes < 0) {
+                    consecutiveErrors++
+                    if (consecutiveErrors > 5) {
+                        logDebug("Too many consecutive read errors, stopping")
+                        break
+                    }
+                    Thread.sleep(50)
+                    continue
+                }
+                consecutiveErrors = 0
 
                 val mixedLen = mixAudio(
                     micBuf, maxOf(0, micBytes),
@@ -514,6 +524,17 @@ object AudioEngine {
         if (output == null || !output.exists()) {
             Log.e(TAG, "No output file at: ${output?.absolutePath}")
             return null
+        }
+
+        // Copy to public DCIM so user can see it in file manager
+        try {
+            val publicDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), "CallRecorder")
+            if (!publicDir.exists()) publicDir.mkdirs()
+            val publicFile = File(publicDir, output.name)
+            output.copyTo(publicFile, overwrite = true)
+            logDebug("Copied to public: ${publicFile.absolutePath} (${publicFile.length()} bytes)")
+        } catch (e: Exception) {
+            logDebug("Could not copy to public DCIM: ${e.message}")
         }
 
         logDebug("Recording saved: ${output.absolutePath} (${output.length()} bytes)")

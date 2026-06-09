@@ -1,5 +1,12 @@
 # Call Recorder App Changes
 
+## v1.1.0
+- Recordings copied to public DCIM/CallRecorder/ after save (visible in file manager)
+- Long-press context menu on recordings: Play, Move to Storage Path, Share, Remove
+- Audio read retry logic: tolerates up to 5 consecutive errors before stopping (fixes call interruptions)
+- Remove confirmation dialog before deleting recordings
+- Move copies recording to the storage path defined in Settings
+
 ## v1.0.9
 - Full dual-source recording: creates separate AudioRecord for mic and speaker, mixes both
 - USB headset, Bluetooth SCO/A2DP, HDMI, wired headset detection in source list

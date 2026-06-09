@@ -6,12 +6,16 @@ import android.os.Bundle
 import android.os.Environment
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ciphervault.callrecorder.databinding.ActivityRecordingsBinding
@@ -27,10 +31,13 @@ class RecordingsListActivity : AppCompatActivity() {
 
     enum class ErrorCode(val code: String, val description: String) {
         RL001("RL001", "Failed to list recordings"),
+        RL002("RL002", "Failed to move recording"),
+        RL003("RL003", "Failed to delete recording"),
         RL999("RL999", "Unknown error")
     }
 
     private lateinit var binding: ActivityRecordingsBinding
+    private var entries: List<RecordingEntry> = emptyList()
 
     private fun reportError(code: ErrorCode, message: String, exception: Exception? = null) {
         Log.e(TAG, "[${ERROR_PREFIX}${code.code}] ${code.description}: $message", exception)
@@ -62,13 +69,10 @@ class RecordingsListActivity : AppCompatActivity() {
     private fun loadRecordings() {
         try {
             val recordingsDirs = mutableListOf<File>()
-            // App-private storage (always writable, primary save location)
             getExternalFilesDir(null)?.let { recordingsDirs.add(File(it, "Recordings")) }
-            // Also scan public DCIM and Music for legacy recordings
+            recordingsDirs.add(File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), "CallRecorder"))
             recordingsDirs.add(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM))
-            recordingsDirs.add(File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), "Recordings"))
             recordingsDirs.add(File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC), "CallRecorder"))
-            recordingsDirs.add(Environment.getExternalStorageDirectory())
 
             val formats = listOf("wav", "flac", "mp3", "aac", "ogg")
             val allFiles = mutableListOf<File>()
@@ -82,7 +86,7 @@ class RecordingsListActivity : AppCompatActivity() {
 
             val dateFormat = SimpleDateFormat("dd MMM yyyy HH:mm", Locale.getDefault())
 
-            val entries = allFiles
+            entries = allFiles
                 .distinctBy { it.absolutePath }
                 .sortedByDescending { it.lastModified() }
                 .map { file ->
@@ -102,8 +106,8 @@ class RecordingsListActivity : AppCompatActivity() {
                 binding.tvEmpty.visibility = View.GONE
                 binding.recyclerView.visibility = View.VISIBLE
                 binding.recyclerView.layoutManager = LinearLayoutManager(this)
-                binding.recyclerView.adapter = RecordingsAdapter(entries) { entry ->
-                    openRecording(entry)
+                binding.recyclerView.adapter = RecordingsAdapter(entries) { entry, view ->
+                    showContextMenu(entry, view)
                 }
             }
 
@@ -115,29 +119,94 @@ class RecordingsListActivity : AppCompatActivity() {
         }
     }
 
-    private fun openRecording(entry: RecordingEntry) {
+    private fun showContextMenu(entry: RecordingEntry, anchorView: View) {
+        val popup = PopupMenu(this, anchorView)
+        popup.menu.add(0, 1, 0, "Play")
+        popup.menu.add(0, 2, 1, "Move to Storage Path")
+        popup.menu.add(0, 3, 2, "Share")
+        popup.menu.add(0, 4, 3, "Remove")
+
+        popup.setOnMenuItemClickListener { item: MenuItem ->
+            when (item.itemId) {
+                1 -> playRecording(entry)
+                2 -> moveRecording(entry)
+                3 -> shareRecording(entry)
+                4 -> removeRecording(entry)
+            }
+            true
+        }
+        popup.show()
+    }
+
+    private fun playRecording(entry: RecordingEntry) {
         try {
             val uri = FileProvider.getUriForFile(this, "$packageName.fileprovider", entry.file)
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 setDataAndType(uri, "audio/*")
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
-            startActivity(Intent.createChooser(intent, "Open ${entry.name}"))
+            startActivity(Intent.createChooser(intent, "Play ${entry.name}"))
         } catch (e: Exception) {
-            logDebug("Cannot open: ${e.message}")
-            // Try sharing instead
-            try {
-                val uri = FileProvider.getUriForFile(this, "$packageName.fileprovider", entry.file)
-                val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                    type = "audio/*"
-                    putExtra(Intent.EXTRA_STREAM, uri)
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-                startActivity(Intent.createChooser(shareIntent, "Share ${entry.name}"))
-            } catch (e2: Exception) {
-                Toast.makeText(this, "Saved at: ${entry.file.absolutePath}", Toast.LENGTH_LONG).show()
-            }
+            Toast.makeText(this, "Cannot play: ${e.message}", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun moveRecording(entry: RecordingEntry) {
+        try {
+            val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+            val storagePath = prefs.getString(SettingsActivity.PREF_STORAGE_PATH, "DCIM") ?: "DCIM"
+            val cleanPath = storagePath
+                .removePrefix("/storage/emulated/0/")
+                .removePrefix("storage/emulated/0/")
+                .trim('/')
+                .ifBlank { "DCIM" }
+            val targetDir = File(Environment.getExternalStorageDirectory(), cleanPath)
+            if (!targetDir.exists()) targetDir.mkdirs()
+
+            val targetFile = File(targetDir, entry.file.name)
+            entry.file.copyTo(targetFile, overwrite = true)
+
+            Toast.makeText(this, "Moved to ${targetFile.absolutePath}", Toast.LENGTH_LONG).show()
+            loadRecordings()
+        } catch (e: Exception) {
+            reportError(ErrorCode.RL002, "Move failed", e)
+            Toast.makeText(this, "Move failed: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun shareRecording(entry: RecordingEntry) {
+        try {
+            val uri = FileProvider.getUriForFile(this, "$packageName.fileprovider", entry.file)
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "audio/*"
+                putExtra(Intent.EXTRA_STREAM, uri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            startActivity(Intent.createChooser(intent, "Share ${entry.name}"))
+        } catch (e: Exception) {
+            Toast.makeText(this, "Cannot share: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun removeRecording(entry: RecordingEntry) {
+        AlertDialog.Builder(this)
+            .setTitle("Remove Recording")
+            .setMessage("Delete ${entry.name}?\nThis cannot be undone.")
+            .setPositiveButton("Remove") { _, _ ->
+                try {
+                    if (entry.file.delete()) {
+                        Toast.makeText(this, "Removed", Toast.LENGTH_SHORT).show()
+                        loadRecordings()
+                    } else {
+                        Toast.makeText(this, "Could not delete file", Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: Exception) {
+                    reportError(ErrorCode.RL003, "Delete failed", e)
+                    Toast.makeText(this, "Delete failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun formatSize(bytes: Long): String {
@@ -156,7 +225,7 @@ class RecordingsListActivity : AppCompatActivity() {
 
     class RecordingsAdapter(
         private val entries: List<RecordingEntry>,
-        private val onClick: (RecordingEntry) -> Unit
+        private val onLongClick: (RecordingEntry, View) -> Unit
     ) : RecyclerView.Adapter<RecordingsAdapter.ViewHolder>() {
 
         class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -177,7 +246,13 @@ class RecordingsListActivity : AppCompatActivity() {
             holder.tvName.text = entry.name
             holder.tvDetails.text = "${entry.dateStr}  •  ${entry.sizeStr}"
             holder.tvFormat.text = entry.format
-            holder.root.setOnClickListener { onClick(entry) }
+            holder.root.setOnLongClickListener {
+                onLongClick(entry, it)
+                true
+            }
+            holder.root.setOnClickListener {
+                onLongClick(entry, it)
+            }
         }
 
         override fun getItemCount(): Int = entries.size
